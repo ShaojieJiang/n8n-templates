@@ -1,0 +1,403 @@
+{
+  "name": "Smart Survey",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Smart Survey",
+        "formDescription": "Survey questions decided by an AI Agent.",
+        "options": {
+          "buttonLabel": "Start"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1500,
+        275
+      ],
+      "id": "8f4e18e4-035d-4d2e-858e-4d84bb01afa1",
+      "name": "On form submission",
+      "webhookId": "343ec6f1-3130-4fb8-ad39-ff8df4b53641"
+    },
+    {
+      "parameters": {
+        "defineForm": "json",
+        "jsonOutput": "={{ JSON.stringify($json.elements) }}",
+        "options": {
+          "buttonLabel": "Next"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        216,
+        375
+      ],
+      "id": "d22964a0-0fa7-4248-a205-3eebf920737e",
+      "name": "Form",
+      "webhookId": "aaf96c51-2aa3-4569-99ce-7457dd38232f"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($('Code').item.json) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a customer service expert. You're conducting a survey to \"understand what and why the users like n8n.\"\n\nStart by asking the user's name, age, gender, occupation, etc. Ask one question at a time.\n\nAfterwards, ask them questions related to the topic of this survey. Ask these questions when appropriate:\n1. How did you first hear about n8n?\nDescribe how you heard about n8n\n2. How long (months) have you been using n8n?\n3. What do you like most about n8n?\n4. For all the features they mentioned, ask why they like a certain feature.\n5. What features do you wish n8n had?\n\nDecide what questions to ask next when you have seen the previous answers.\nOnly finish the survey when there are no further questions to ask."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -808,
+        100
+      ],
+      "id": "52e639cf-1842-4f07-a7ae-76cd35b88a3b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -840,
+        320
+      ],
+      "id": "dd74a7ad-12a4-4701-a82e-4fba9efabd50",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "593Y0ncmVETnR7nM",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"properties\": {\n    \"formElements\": {\n      \"description\": \"List of form elements. Empty when no more questions to ask\",\n      \"items\": {\n        \"properties\": {\n          \"fieldLabel\": {\n            \"description\": \"The label that appears above the input field\",\n            \"type\": \"string\"\n          },\n          \"fieldType\": {\n            \"description\": \"The type of input field\",\n            \"enum\": [\n              \"date\",\n              \"dropdown\",\n              \"email\",\n              \"file\",\n              \"number\",\n              \"password\",\n              \"text\",\n              \"textarea\"\n            ],\n            \"type\": \"string\"\n          },\n          \"fieldOptions\": {\n            \"anyOf\": [\n              {\n                \"items\": {\n                  \"type\": \"string\"\n                },\n                \"type\": \"array\"\n              },\n              {\n                \"type\": \"null\"\n              }\n            ],\n            \"default\": null,\n            \"description\": \"List of options for dropdown field type\"\n          },\n          \"multiselect\": {\n            \"anyOf\": [\n              {\n                \"type\": \"boolean\"\n              },\n              {\n                \"type\": \"null\"\n              }\n            ],\n            \"default\": null,\n            \"description\": \"Set to true to make dropdown field multiple-choice\"\n          },\n          \"multipleFiles\": {\n            \"anyOf\": [\n              {\n                \"type\": \"boolean\"\n              },\n              {\n                \"type\": \"null\"\n              }\n            ],\n            \"default\": null,\n            \"description\": \"Set to true to allow users to select more than one file\"\n          },\n          \"acceptFileTypes\": {\n            \"anyOf\": [\n              {\n                \"type\": \"string\"\n              },\n              {\n                \"type\": \"null\"\n              }\n            ],\n            \"default\": null,\n            \"description\": \"Comma-separated list of allowed file extensions (e.g., '.pdf,.doc,.docx')\"\n          },\n          \"placeholder\": {\n            \"anyOf\": [\n              {\n                \"type\": \"string\"\n              },\n              {\n                \"type\": \"null\"\n              }\n            ],\n            \"default\": null,\n            \"description\": \"Placeholder text for the field. Not applicable for dropdown, date, and file field types\"\n          },\n          \"requiredField\": {\n            \"default\": false,\n            \"description\": \"Set to true to require users to complete this field\",\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"fieldLabel\",\n          \"fieldType\"\n        ],\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    },\n    \"endPage\": {\n      \"default\": false,\n      \"description\": \"Set to true when formElements is empty\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"formElements\",\n    \"endPage\"\n  ],\n  \"type\": \"object\",\n  \"title\": \"N8NForm\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -452,
+        520
+      ],
+      "id": "4b762357-51bc-4650-8f93-f85333e3e302",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "666e5e89-30ac-4ef6-99ac-6e5bc7d74ff4",
+              "leftValue": "={{ $json.output.formElements }}",
+              "rightValue": "end",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3dbdd348-52f5-46c9-a18a-33ccfa92c45c",
+              "leftValue": "={{ $json.output.endPage }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        100
+      ],
+      "id": "fb087cd1-1a49-4441-9836-3beacf99b2a4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst previousAnswers = { ...$input.first().json.data[0] };\n\nif (Object.keys(previousAnswers).length === 2) {\n  return { startSurvey: true };\n}\ndelete previousAnswers.submittedAt;\ndelete previousAnswers.formMode;\nreturn {userAnswers: previousAnswers};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1060,
+        100
+      ],
+      "id": "e6a479e4-6f66-4552-872c-d151bb553b38",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        320
+      ],
+      "id": "879f45a5-5a25-47ab-bfa7-2089f8764ca2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        275
+      ],
+      "id": "02f8a140-19ce-4111-9f3e-a6d218589a9c",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Thanks!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        -4,
+        0
+      ],
+      "id": "b8a85169-b051-4e95-90aa-464d05d4666a",
+      "name": "End",
+      "webhookId": "41efe4a2-c077-493a-9653-77ac6f10ab9a"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        322.5
+      ],
+      "id": "52a6d512-8eb3-40fb-8a03-fd5cb6a17869",
+      "name": "Auto-fixing Output Parser"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "elements = _input.first().json.output.formElements\nresults = []\nfor element in elements:\n    match element.fieldType:\n        case \"date\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"date\",\n                \"formatDate\": \"mm/dd/yyyy\",\n                \"requiredField\": element.requiredField,\n            })\n        case \"dropdown\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"dropdown\",\n                \"requiredField\": element.requiredField,\n                \"fieldOptions\": {\n                    \"values\": [\n                        {\n                            \"option\": option\n                        } for option in element.fieldOptions\n                    ]\n                },\n            })\n        case \"email\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"email\",\n                \"requiredField\": element.requiredField,\n                \"placeholder\": element.placeholder,\n            })\n        case \"file\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"file\",\n                \"requiredField\": element.requiredField,\n                \"multipleFiles\": element.multipleFiles,\n                \"acceptFileTypes\": element.acceptFileTypes,\n            })\n        case \"number\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"number\",\n                \"requiredField\": element.requiredField,\n                \"placeholder\": element.placeholder,\n            })\n        case \"password\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"password\",\n                \"requiredField\": element.requiredField,\n                \"placeholder\": element.placeholder,\n            })\n        case \"text\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"text\",\n                \"requiredField\": element.requiredField,\n                \"placeholder\": element.placeholder,\n            })\n        case \"textarea\":\n            results.append({\n                \"fieldLabel\": element.fieldLabel,\n                \"fieldType\": \"textarea\",\n                \"requiredField\": element.requiredField,\n                \"placeholder\": element.placeholder,\n            })\nreturn {\"elements\": results}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4,
+        200
+      ],
+      "id": "57d593c5-08aa-40b6-8b53-b5915856c3cc",
+      "name": "Format Elements"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -572,
+        520
+      ],
+      "id": "2dc9a15e-3824-4930-b33b-7ece240dc136",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "593Y0ncmVETnR7nM",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Elements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Elements": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3386a6b2-b5bd-4fca-b88d-121f7b41a582",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf1e89d5888460f9dc1ea26a97a886dc8cde1e931310890367f75c0d888ed8d8"
+  },
+  "id": "pCndc11ZG5oaryxs",
+  "tags": []
+}
