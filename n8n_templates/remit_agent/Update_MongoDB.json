@@ -1,0 +1,98 @@
+{
+  "name": "Update MongoDB",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        260,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "remit_recomm",
+        "updateKey": "_id",
+        "fields": "={{ Object.keys($json).join(\",\") }}",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        480
+      ],
+      "id": "bf5b41b5-be98-4361-82d5-b3b5b610a060",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "UH8CNOAPhIu6f7yO",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn $input.first().json.query;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        480
+      ],
+      "id": "b3940801-6acf-406e-933b-965d52453a39",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4b989d38-2e15-459d-a1e1-af66c9cef2e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf1e89d5888460f9dc1ea26a97a886dc8cde1e931310890367f75c0d888ed8d8"
+  },
+  "id": "zf21qxfbQ2kJywnP",
+  "tags": []
+}

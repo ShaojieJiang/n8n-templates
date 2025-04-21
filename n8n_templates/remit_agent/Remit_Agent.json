@@ -1,0 +1,210 @@
+{
+  "name": "Remit Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "你是一个换汇助手。你可以帮助用户完成以下的任务：\n1. 根据用户的需求推荐换汇平台，并解释该平台为什么适合用户\n2. 整理用户推荐的平台，并存入或者更新数据库里的记录\n3. 按用户的指示，删除数据库中指定的过期平台\n\n注意在回复用户的消息时，如果需要请查询数据库然后再整理知识并回应。当用户有平台推荐的时候，记得问他们推荐的理由（必须）和URL（非必须）。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -508,
+        -80
+      ],
+      "id": "d1ad019f-f9fa-4caa-9431-5f357853d56f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        140
+      ],
+      "id": "b24dd86f-f2cf-4bd6-8256-e678c402aabc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "你好，我是换汇咨询机器人。你可以问我：\n1. 有什么平台推荐\n2. 告诉我一个平台，从而我可以推荐给别人",
+        "options": {
+          "subtitle": "",
+          "title": "你好，我是换汇咨询机器人。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -820,
+        -80
+      ],
+      "id": "b698229b-b38c-42de-8438-533f73387667",
+      "name": "When chat message received",
+      "webhookId": "0960d257-34f5-4846-802b-c68f90f51d64"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "返回所有收录的换汇平台",
+        "collection": "remit_recomm",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDbTool",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        140
+      ],
+      "id": "7a12e716-4e49-44f5-ae77-b5f3fc722e28",
+      "name": "MongoDB Find",
+      "credentials": {
+        "mongoDb": {
+          "id": "UH8CNOAPhIu6f7yO",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "UpdateMongoDB",
+        "workflowId": {
+          "__rl": true,
+          "value": "zf21qxfbQ2kJywnP",
+          "mode": "list",
+          "cachedResultName": "Update MongoDB"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{\n{\n  _id: $fromAI(\"_id\", \"The id of the record\", \"string\"),\n  platform_name: $fromAI(\"platform_name\", \"The platform_name of the record\", \"string\"),\n  url: $fromAI(\"url\", \"The url of the record\", \"string\"),\n  recommendation_reason: $fromAI(\"recommendation_reason\", \"The recommendation_reason of the record\", \"string\"),\n}\n}}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        140
+      ],
+      "id": "60948bb2-440c-4482-8cb0-0016e7913f03",
+      "name": "Call n8n Workflow Tool"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -600,
+        140
+      ],
+      "id": "7c06256b-ebc2-4ceb-b53d-57a0be70d9f2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "593Y0ncmVETnR7nM",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Find": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call n8n Workflow Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "656e931c-2f22-4871-b809-2b4a9e2794da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf1e89d5888460f9dc1ea26a97a886dc8cde1e931310890367f75c0d888ed8d8"
+  },
+  "id": "cH16BVToPd42h5BR",
+  "tags": []
+}
