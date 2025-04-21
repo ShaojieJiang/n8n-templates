@@ -1,5 +1,5 @@
 {
-  "name": "Update MongoDB",
+  "name": "MongoDB Update",
   "nodes": [
     {
       "parameters": {
@@ -88,7 +88,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "4b989d38-2e15-459d-a1e1-af66c9cef2e5",
+  "versionId": "915c8723-185d-435c-b876-bccafb7b6f5d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "bf1e89d5888460f9dc1ea26a97a886dc8cde1e931310890367f75c0d888ed8d8"

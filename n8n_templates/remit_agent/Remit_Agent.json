@@ -11,7 +11,7 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.8,
       "position": [
-        -508,
+        -448,
         -80
       ],
       "id": "d1ad019f-f9fa-4caa-9431-5f357853d56f",
@@ -78,7 +78,7 @@
           "__rl": true,
           "value": "zf21qxfbQ2kJywnP",
           "mode": "list",
-          "cachedResultName": "Update MongoDB"
+          "cachedResultName": "MongoDB Update"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -134,6 +134,29 @@
         "openAiApi": {
           "id": "593Y0ncmVETnR7nM",
           "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "删除指定的记录",
+        "operation": "delete",
+        "collection": "remit_recomm",
+        "query": "={\"platform_name\": \"{{ $fromAI(\"platform_name\", \"The item name to be deleted\", \"string\") }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDbTool",
+      "typeVersion": 1.1,
+      "position": [
+        -120,
+        140
+      ],
+      "id": "c1813421-6d37-4e04-9e44-c7780c5c05d0",
+      "name": "MongoDB Delete",
+      "credentials": {
+        "mongoDb": {
+          "id": "UH8CNOAPhIu6f7yO",
+          "name": "MongoDB account"
         }
       }
     }
@@ -194,13 +217,24 @@
           }
         ]
       ]
+    },
+    "MongoDB Delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "656e931c-2f22-4871-b809-2b4a9e2794da",
+  "versionId": "5fa75b2d-a563-4637-8808-9c3f1b5b5ef2",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "bf1e89d5888460f9dc1ea26a97a886dc8cde1e931310890367f75c0d888ed8d8"
