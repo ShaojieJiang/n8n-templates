@@ -1,0 +1,247 @@
+{
+  "name": "Knowlege Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "I'm Knowledge Agent. I will answer your questions according to my knowledge, or remember a knowledge on your request.",
+        "options": {
+          "subtitle": "",
+          "title": "You're talking to Knowledge Agent."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8cc209c5-d38f-4aec-8646-1bc5d9cbc45d",
+      "name": "When chat message received",
+      "webhookId": "2b7478c4-7c0a-491d-a519-879fe7842b31"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an FAQ agent.\n\nYou can:\n1. Answer questions based on the knowledge retrieved by the `retrieve_knowledge` tool.\n2. Insert, update a new FAQ-answer pair, or delete a document through the `update_knowledge` tool. When updating a document, remove the old one and insert an updated one. When deleting a document, ask the user to confirm first.\n\nRemember to run the `retrieve_knowledge` tool first when the user asks non-commonsense questions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        356,
+        0
+      ],
+      "id": "b7d92e24-a58f-4b80-82b8-bab14ce72155",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        220
+      ],
+      "id": "4970d8b0-8f59-4f70-93a5-555acb06cea2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "593Y0ncmVETnR7nM",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        340,
+        220
+      ],
+      "id": "fb5449b6-6be7-492d-b7bf-814c424b4bdc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        548,
+        420
+      ],
+      "id": "deeb9028-cf3c-41b0-ac86-5f0a63fae76a",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "593Y0ncmVETnR7nM",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "retrieve_knowledge",
+        "toolDescription": "Get FAQ questions and answers from the knowledge base",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "knowlege-agent",
+          "mode": "list",
+          "cachedResultName": "knowlege-agent"
+        },
+        "topK": 10,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        222.5
+      ],
+      "id": "b5fd13a1-99c0-49bd-8878-8e95f9ed1a76",
+      "name": "Pinecone Retrieve",
+      "credentials": {
+        "pineconeApi": {
+          "id": "AbueRbdeA38gx7zD",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "update_knowledge",
+        "description": "Add a new document or update an existing document to the knowledge base",
+        "workflowId": {
+          "__rl": true,
+          "value": "Abv7ymSJQeE7tieS",
+          "mode": "list",
+          "cachedResultName": "Update Knowledge"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{\n{\n  id: $fromAI(\"id\", \"The id of the record\", \"string\"),\n  action: $fromAI(\"action\", \"The action for this request. One of 'insert' or 'delete'\", \"string\"),\n  text: $fromAI(\"text\", \"The new or updated text of the document\", \"string\")\n}\n}}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        756,
+        220
+      ],
+      "id": "6a7048e5-54ac-48d3-899a-f31626d09ebd",
+      "name": "Update Knowledge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Retrieve",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Retrieve": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d825894-1359-45fd-b342-cfa982d667b8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf1e89d5888460f9dc1ea26a97a886dc8cde1e931310890367f75c0d888ed8d8"
+  },
+  "id": "Z7bAKN0fXA0NsNMw",
+  "tags": []
+}
